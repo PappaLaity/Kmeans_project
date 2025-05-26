@@ -14,6 +14,7 @@ class KMeans:
         self.centroids = []
         self.clusters = []
         self.labels = []
+        self.losses = []
 
     def random_init(self):
       """
@@ -35,13 +36,13 @@ class KMeans:
 
         # Optimize clusters
         for i in range(self.max_iters):
-          self.nb_iters+=1
+          self.nb_iters = i
           self.centroids_old = self.centroids
           self.clusters = self._create_clusters()
           if self.plot_steps:
             self.plot()
           self.centroids =self._get_centroids()
-          self.loss()
+          self.losses.append(self.loss())
           if self._is_converged(self.centroids_old,self.centroids):
             break
 
@@ -109,12 +110,12 @@ class KMeans:
       loss = 0
       for i, centroid in enumerate(self.centroids):
         sumCluster = 0
-        for x in self.clusters[i]:
-          sumCluster+= self.euclidean_distance(x,centroid)**2
+        for idx in self.clusters[i]:
+          sumCluster+= self.euclidean_distance(self.X[idx],centroid)**2
           # sumCluster+= np.linalg.norm(x - centroid ,2)**2
         loss+= sumCluster
       print(f"Epoch {self.nb_iters} / {self.max_iters} -- Loss: {loss}")
-      return self
+      return loss
 
     def euclidean_distance(self,x1,x2):
       """

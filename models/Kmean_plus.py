@@ -52,7 +52,7 @@ class KMeans_plus:
 
         # Optimize clusters
         for i in range(self.max_iters):
-          self.nb_iters+=1
+          self.nb_iters = i
           self.centroids_old = self.centroids
           self.clusters = self._create_clusters()
           if self.plot_steps:
