@@ -9,7 +9,6 @@ The aim of this function is to:
     - Experiment Elbow Method to find Optimal K
 
 
-
 """
 
 import numpy as np
@@ -61,8 +60,7 @@ if __name__ == "__main__":
     print("\n")
     print("Kmeans Model Training with K = 4 - Max Epochs = 100")
     labels_kmeans = kmeans.predict(data)
-    # print(kmeans.nb_iters)
-    # print(kmeans.losses)
+    
     plot(np.arange(kmeans.nb_iters+1),kmeans.losses,"Epochs","Loss","Kmeans Algorithm")
     print("\n")
     
