@@ -2,11 +2,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-class KMeans:
-    """
-    
-    """
-    def __init__(self, K=4, max_iters=100, plot_steps=False):
+class KMeans_plus:
+    def __init__(self, K=4, max_iters=100, init="default", plot_steps=False):
         self.K= K
         self.max_iters = max_iters
         self.nb_iters = 0
@@ -14,24 +11,44 @@ class KMeans:
         self.centroids = []
         self.clusters = []
         self.labels = []
+        self.init = init
+        self.losses = []
 
     def random_init(self):
-      """
-        Random Init Function
-      """
       self.n_samples, self.n_features = self.X.shape
       idx = np.random.choice(self.n_samples,self.K)
       self.centroids= self.X[idx]
 
 
+    def kmean_plus_centroid_init(self,):
+      self.centroids = []
+      self.n_samples, self.n_features = self.X.shape
+      idx = np.random.choice(self.n_samples)
+      self.centroids.append(self.X[idx])
+      for i in range(1,self.K):
+        distances = []
+        for elt in self.X :
+          min = np.linalg.norm(elt - self.centroids[0])
+          for center in self.centroids:
+            if np.linalg.norm(elt - center) < min :
+              min = np.linalg.norm(elt - self.centroids[0])
+          distances.append(min)
+        distances = np.array(distances)
+        proba = distances / distances.sum()
+        centroid = np.random.choice(self.n_samples, p=proba)
+        self.centroids.append(self.X[centroid])
+
+      return self
+
+
     def predict(self, X):
-        """
-        Predict Function
-        """
         self.X = X
 
         # Initialize
-        self.random_init()
+        if self.init == "Kmeans++":
+          self.kmean_plus_centroid_init()
+        else:
+          self.random_init()
 
         # Optimize clusters
         for i in range(self.max_iters):
@@ -41,7 +58,9 @@ class KMeans:
           if self.plot_steps:
             self.plot()
           self.centroids =self._get_centroids()
-          self.loss()
+          loss = self.loss()
+          print(f"Epoch {self.nb_iters} / {self.max_iters} -- Loss: {loss}")
+          self.losses.append(loss)
           if self._is_converged(self.centroids_old,self.centroids):
             break
 
@@ -52,9 +71,6 @@ class KMeans:
         return labels
 
     def _get_cluster_labels(self):
-        """
-            Get labels for Clusters
-        """
         # each sample will get the label of the cluster it was assigned to
         labels = []
         for elt in range(self.n_samples):
@@ -65,10 +81,8 @@ class KMeans:
 
 
     def _create_clusters(self):
-        """
-            Create Cluster in basis of The distances with closest Centroid
-        """
         # Assign the samples to the closest centroids to create clusters
+        # remind the clusters is composed of the idx of datapoint and not datapoint itself
         clusters = []
         for i in range(self.K):
           clusters.append([])
@@ -84,9 +98,6 @@ class KMeans:
         return np.argmin(dists)
 
     def _get_centroids(self):
-        """
-            Get New Centroids functions after creating clusters
-        """
         # assign mean value of clusters to centroids
         centroids = []
         for elt in self.clusters:
@@ -94,45 +105,33 @@ class KMeans:
         return np.array(centroids)
 
     def _is_converged(self, centroids_old, centroids):
-        """
-            Check the convergence of the Algorithm using the centroids criteria
-        """
         # distances between each old and new centroids, fol all centroids
         return np.sum(centroids - centroids_old) == 0
 
     def loss(self):
-      """
-        Loss Function
-      """
       # Compute the loss function for the model
       sumCluster = 0
       loss = 0
       for i, centroid in enumerate(self.centroids):
         sumCluster = 0
-        for x in self.clusters[i]:
-          sumCluster+= self.euclidean_distance(x,centroid)**2
+        for idx in self.clusters[i]:
+          sumCluster+= self.euclidean_distance(self.X[idx],centroid)**2
           # sumCluster+= np.linalg.norm(x - centroid ,2)**2
         loss+= sumCluster
-      print(f"Epoch {self.nb_iters} / {self.max_iters} -- Loss: {loss}")
-      return self
+      return loss
+      
 
     def euclidean_distance(self,x1,x2):
-      """
-        Euclidian distance
-      """
       return np.linalg.norm(x2-x1,ord=2)
 
 
     def plot(self):
-        """
-            Plot Centroids Evolution during the process of learning
-        """
         fig, ax = plt.subplots(figsize=(12, 8))
 
         # Plotting points for each cluster
         for i, cluster in enumerate(self.clusters):
             if len(cluster) > 0:
-                points = X[cluster]
+                points = self.X[cluster]
                 ax.scatter(points[:, 0], points[:, 1])
 
         # Plotting centroids
