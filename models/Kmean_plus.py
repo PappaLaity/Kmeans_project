@@ -31,7 +31,7 @@ class KMeans_plus:
           min = np.linalg.norm(elt - self.centroids[0])
           for center in self.centroids:
             if np.linalg.norm(elt - center) < min :
-              min = np.linalg.norm(elt - self.centroids[0])
+              min = np.linalg.norm(elt - center)
           distances.append(min)
         distances = np.array(distances)
         proba = distances / distances.sum()
