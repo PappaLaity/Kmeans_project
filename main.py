@@ -53,6 +53,10 @@ if __name__ == "__main__":
     data.Gender = data.Gender.map(lambda x : 0 if x == "Male" else 1)
     # Remove the first Column
     data = data.iloc[:,1:]
+
+    # normalize data 
+    data = (data - data.mean())/data.std()
+    dataset = data
     # Coonvert data to numpy before calling the kmeans Algorithm
     data = data.to_numpy()
     
